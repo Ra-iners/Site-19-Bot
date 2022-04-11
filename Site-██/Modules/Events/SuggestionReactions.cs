@@ -8,12 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Site___.Extensions;
 using Discord;
+using System.Reflection;
+
 namespace Site___.Modules.Events
 {
     public class SuggestionReactions
     {
         public void Initialize()
         {
+            Log.Debug("{Module} Module initialized", GetType().Name + ".cs");
             Globals.Client.MessageReceived += async (msg) =>
             {
                 if (msg.Channel.Id != 811536427186913281) return; // Ignore all messages except in the suggestion channel
