@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using Discord;
+using Serilog;
 
 namespace Site___.Modules.Events
 {
@@ -12,8 +13,9 @@ namespace Site___.Modules.Events
     {
         public async void Initialize()
         {
+            Log.Debug("{Module} Module initialized", GetType().Name + ".cs");
+
             await InvokeQOTD();
-            
             System.Timers.Timer t = new()
             {
                 Interval = 86400000, // 1 day = 86400000ms
@@ -51,7 +53,7 @@ namespace Site___.Modules.Events
             Question.WithThumbnailUrl("https://cdn.discordapp.com/attachments/874423096428355674/963005116397522994/qotd2.png");
 
             var Message = await QOTD.SendMessageAsync("<@&847573204623949904>", embed: Question.Build());
-            await QOTD.CreateThreadAsync("QOTD", ThreadType.PublicThread, ThreadArchiveDuration.OneDay, Message, false, 10800);
+            // await QOTD.CreateThreadAsync("QOTD", ThreadType.PublicThread, ThreadArchiveDuration.OneDay, Message, false, 10800);
         }
     }
 }
