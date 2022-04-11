@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Newtonsoft.Json.Linq;
 using Serilog;
-using Site___.Enums;
+using Site___;
 using System;
 using System.Collections.Generic;
 using System.Linq;
