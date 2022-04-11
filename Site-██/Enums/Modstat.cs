@@ -1,10 +1,7 @@
-﻿namespace Site___.Enums
+﻿public enum Modstat
 {
-    public enum Modstat
-    {
-        Warnings,
-        Mutes,
-        Bans,
-        Kicks
-    }
+    Warnings,
+    Mutes,
+    Bans,
+    Kicks
 }
