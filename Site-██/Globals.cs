@@ -1,4 +1,5 @@
 ﻿using Discord.Commands;
+using Discord.Webhook;
 using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using Site___.Storage;
@@ -55,15 +56,9 @@ namespace Site___
         public static string Log {
             set
             {
-                WebClient Http = new WebClient();
-                NameValueCollection NVal = new NameValueCollection();
-
-                NVal.Add("content", value);
-                NVal.Add("username", "DEVELOPMENT MODE");
-
-                Http.UploadValues((string)Configuration.Get("ActionLog"), NVal);
-                Http.Dispose();
-            }
+                DiscordWebhookClient Web = new((string)Configuration.Get("ActionLog"));
+                Web.SendMessageAsync(value, allowedMentions:Discord.AllowedMentions.None);
+            }                
         }
     }
 }
