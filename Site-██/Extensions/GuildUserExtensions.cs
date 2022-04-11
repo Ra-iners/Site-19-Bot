@@ -28,10 +28,8 @@ namespace Site___.Extensions
                 ["Mutes"] = 0,
                 ["Kicks"] = 0,
                 ["Bans"] = 0});
-            
 
             JObject Modstats = JObject.Parse((string)User.Get("Modstats"));
-            Log.Information(Modstats.ToString());
             switch(type)
             {
                 case Modstat.Mutes:

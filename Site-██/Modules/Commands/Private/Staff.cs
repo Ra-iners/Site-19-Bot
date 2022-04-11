@@ -386,20 +386,18 @@ namespace Site___.Modules.Commands.Private
                     await Context.Message.ReplyAsync(embed: Perms.Build());
                     return;
                 }
-                if (User.Get("Warnings") is null)
-                    User.Set("Warnings", "{}");
+                Database WarnDB = new($"Users/{User.Id}");
 
                 int Case = Configuration.IncrimentCase();
-                JObject Warnings = JObject.Parse((string)User.Get("Warnings"));
-                var WarnData = new JObject()
+
+                var WarnData = new IWarning()
                 {
-                    ["Reason"] = Reason,
-                    ["WarnedBy"] = Context.User.Username + "#" + Context.User.Discriminator + " (" + Context.User.Id + ")",
-                    ["WarnedAt"] = DateTime.Now.ToString(),
-                    ["WarningExpires"] = DateTime.Now.AddDays(14).ToString()
+                    Reason = Reason,
+                    WarnedBy = Context.User.Username + "#" + Context.User.Discriminator + " (" + Context.User.Id + ")",
+                    WarnedAt = DateTime.Now,
+                    Expires = DateTime.Now.AddDays(14)
                 };
-                Warnings[Case.ToString()] = WarnData;     
-                User.Set("Warnings", Warnings.ToString());
+                WarnDB.Set("Warnings", $"{Case}", JsonConvert.SerializeObject(WarnData));
 
                 EmbedBuilder DM = new();
                 DM.Title = ":warning: You have been warned!";
@@ -443,28 +441,57 @@ namespace Site___.Modules.Commands.Private
             }
         }
         [Command("Warnings", RunMode = RunMode.Async)]
-        public async Task ViewWarnings(IGuildUser User=null)
+        public async Task ViewWarnings(IGuildUser User=null, bool ViewExpired = false)
         {
             User ??= Context.User as IGuildUser;
             try
             {
                 if ((Context.User as IGuildUser).HasPermission(GuildPermission.ManageMessages) || User == Context.User as IGuildUser)
                 {
+
+                    // Okay so since I had the DB written like really horribly
+                    // The easiest way to do this is to just get the warnings as files
+                    // and then parse them into a list of warnings
+
                     // Allow to view warnings
-                    if (User.Get("Warnings") != null)
+                    if (Directory.Exists($"Database/Users/{User.Id}/Warnings"))
                     {
-                        /*
-                        dynamic JS = JsonConvert.DeserializeObject(User.Get("Warnings").ToString());
+                        Dictionary<int, IWarning> Warnings = new(); // Case Number : Warning Object
+                       
+                        foreach (string Warning in Directory.GetFiles($"Database/Users/{User.Id}/Warnings"))
+                        {
+                            int Case = int.Parse(Path.GetFileName(Warning)); // The file name is supposed to be a number, nothing else
+                            Warnings.Add(Case, JsonConvert.DeserializeObject<IWarning>(File.ReadAllText(Warning)));
+                        }
+                        if (Warnings.Count is 0)
+                        {
+                            await Context.Channel.SendMessageAsync("This user has no warnings.");
+                            return;
+                        }
+                        EmbedBuilder WarningsEmbed = new();
+                        WarningsEmbed.Title = ":warning: Warnings";
+                        WarningsEmbed.WithColor(247, 52, 58);
+                        WarningsEmbed.WithAuthor(User);
+                        WarningsEmbed.WithFooter($"{Context.Guild.Name} | Warnings", Context.Guild.IconUrl);
+                        WarningsEmbed.WithThumbnailUrl(User.GetAvatarUrl() ?? User.GetDefaultAvatarUrl());
 
-                        EmbedBuilder WarnList = new();
-                        WarnList.Title = ":warning: Warnings";
-
-                        TODO MAKE THIS WORK 💀
-                        */
+                        foreach(var Warning in Warnings)
+                        {
+                            if(ViewExpired)
+                                WarningsEmbed.AddField($"W {Warning.Key}", $"Reason: ```{Warning.Value.Reason}```\nExpired?: {(Warning.Value.Expires < DateTime.Now ? "🟢" : "🔴")}", true);
+                            else
+                            {
+                                if (Warning.Value.Expires < DateTime.Now)
+                                    continue;
+                                WarningsEmbed.AddField($"W {Warning.Key}", $"Reason: ```{Warning.Value.Reason}```\nExpired?: {(Warning.Value.Expires < DateTime.Now ? "🟢" : "🔴")}", true);
+                            }
+                        }
+                        
+                        await Context.Message.ReplyAsync(embed: WarningsEmbed.Build());
                     }
                     else
                     {
-                        await Context.Message.ReplyAsync("You don't have any active/expired warnings.");
+                        await Context.Channel.SendMessageAsync("This user has no warnings.");
                     }
                 }
                 else
@@ -483,7 +510,7 @@ namespace Site___.Modules.Commands.Private
             }
             catch(Exception ex)
             {
-                Log.Warning(ex.ToString());
+                Log.Error(ex.ToString());
             }
         }
         [Command("ForceQOTD", RunMode = RunMode.Async)]
