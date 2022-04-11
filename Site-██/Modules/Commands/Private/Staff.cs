@@ -90,7 +90,7 @@ namespace Site___.Modules.Commands.Private
 **Reason:** ```{Reason}```");
 
             await Context.Message.ReplyAsync(embed: Response.Build());
-            (Context.User as IGuildUser).IncrimentModstat(Enums.Modstat.Kicks);
+            (Context.User as IGuildUser).IncrimentModstat(Modstat.Kicks);
         }
 
 
@@ -169,7 +169,7 @@ namespace Site___.Modules.Commands.Private
 **Reason:** ```{Reason}```");
 
             await Context.Message.ReplyAsync(embed: Response.Build());
-            (Context.User as IGuildUser).IncrimentModstat(Enums.Modstat.Bans);
+            (Context.User as IGuildUser).IncrimentModstat(Modstat.Bans);
         }
         [Command("Ban", RunMode = RunMode.Async)]
         public async Task BanUser(ulong User = 0, [Remainder] string Reason = "No reason specified")
@@ -208,7 +208,7 @@ namespace Site___.Modules.Commands.Private
             Globals.Log = $"**Ban** | {Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id}) banned ``{User}`` for {Reason}";
 
             await Context.Message.ReplyAsync("Succesfully banned user.");
-            (Context.User as IGuildUser).IncrimentModstat(Enums.Modstat.Bans);
+            (Context.User as IGuildUser).IncrimentModstat(Modstat.Bans);
         }
         [Command("Unban", RunMode = RunMode.Async)]
         [Alias("Pardon")]
@@ -333,11 +333,11 @@ namespace Site___.Modules.Commands.Private
 **Reason:** ```{Reason}```");
 
             await Context.Message.ReplyAsync(embed: Response.Build());
-            (Context.User as IGuildUser).IncrimentModstat(Enums.Modstat.Kicks);
+            (Context.User as IGuildUser).IncrimentModstat(Modstat.Kicks);
         }
         [Command("Purge", RunMode = RunMode.Async)]
         [Alias("Clear")]
-        public async Task Purge(int Count=0, PurgeFlags Flags= PurgeFlags.All)
+        public async Task Purge(int Count=0, PurgeFlags Flags = PurgeFlags.All)
         {
             if (Count is 0)
             {
@@ -357,7 +357,7 @@ namespace Site___.Modules.Commands.Private
                 await Context.Message.ReplyAsync(embed: Result.Build());
                 return;
             }
-            Globals.Log = "**Purge** | " + Context.User.Username + "#" + Context.User.Discriminator + " (" + Context.User.Id + ") purged ``" + Count + "`` messages in ``" + Context.Channel.Name + "``.";
+            Globals.Log = "**Purge** | " + Context.User.Username + "#" + Context.User.Discriminator + " (" + Context.User.Id + ") purged ``" + Count + "`` messages in ``" + Context.Channel.Name + $"``. Flags: ``{Flags}``";
             var Messages = await Context.Channel.GetMessagesAsync(Count).FlattenAsync();
             
             List<IMessage> ToBeDeleted = new();
@@ -448,7 +448,7 @@ namespace Site___.Modules.Commands.Private
 **Reason:** ```{Reason}```");
 
                 await Context.Message.ReplyAsync(embed: Result.Build());
-                (Context.User as IGuildUser).IncrimentModstat(Enums.Modstat.Warnings);
+                (Context.User as IGuildUser).IncrimentModstat(Modstat.Warnings);
             }
             catch(Exception ex)
             {
@@ -468,7 +468,6 @@ namespace Site___.Modules.Commands.Private
                     // The easiest way to do this is to just get the warnings as files
                     // and then parse them into a list of warnings
 
-                    // Allow to view warnings
                     if (Directory.Exists($"Database/Users/{User.Id}/Warnings"))
                     {
                         Dictionary<int, IWarning> Warnings = new(); // Case Number : Warning Object
@@ -558,6 +557,17 @@ namespace Site___.Modules.Commands.Private
             var Message = await QOTD.SendMessageAsync("<@&847573204623949904>", embed: Question.Build());
             await QOTD.CreateThreadAsync("QOTD", ThreadType.PublicThread, ThreadArchiveDuration.OneDay, Message, false, 10800);
             await Context.Message.ReplyAsync("QOTD Created");
+        }
+        [Command("Close", RunMode = RunMode.Async)]
+        public async Task CloseTicket()
+        {
+            if (Context.Channel.GetChannelType() != ChannelType.PrivateThread)
+                return; // Tickets are supposed to be PrivateThreads
+            if (!Context.Channel.Name.ToLower().Contains("ticket"))
+                return; // Tickets are supposed to be named 'Ticket #'
+
+            await (Context.Channel as SocketThreadChannel).ModifyAsync(x => x.Archived = true);
+            Globals.Log = $"**Thread Close** | Thread: {(Context.Channel as IThreadChannel).Mention} | Closed by: {Context.User.Username}#{Context.User.Discriminator}";
         }
     }   
 }
