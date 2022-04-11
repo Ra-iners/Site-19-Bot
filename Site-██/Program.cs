@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Site___.Extensions;
+using Site___.Modules.Events;
 using Site___.Storage;
 
 namespace Site___
@@ -46,6 +47,7 @@ namespace Site___
 
             Globals.Client.Log += LogEvent;
             Globals.Client.ShardReady += ShardReady;
+
             await RegisterCommands();
 
             await Globals.Client.LoginAsync(TokenType.Bot, (string)Configuration.Get("Token"));
@@ -54,9 +56,17 @@ namespace Site___
             await Task.Delay(-1);
         }
 
+        static bool AlreadyInitialized = false;
         async Task ShardReady(DiscordSocketClient arg)
         {
             Globals.Log = "**Shard Ready** | Shard " + arg.ShardId + " is ready.";
+            if(!AlreadyInitialized) // This was the issue on the last bot on why it would repeat messages
+            {                       // Periodically the shard would reconnect so it would trigger the events again, duplicating them.
+                AlreadyInitialized = true;
+                
+                new SuggestionReactions().Initialize();
+                new DailyQOTD().Initialize();
+            }
         }
 
         public async Task RegisterCommands()
