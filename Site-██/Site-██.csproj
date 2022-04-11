@@ -115,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\Modstat.cs" />
+    <Compile Include="Enums\PurgeFlags.cs" />
     <Compile Include="Extensions\DatabaseExtensions.cs" />
     <Compile Include="Extensions\GuildUserExtensions.cs" />
     <Compile Include="Extensions\Serializer.cs" />
@@ -123,6 +124,9 @@
     <Compile Include="Logging\DiscordSink.cs" />
     <Compile Include="Modules\Commands\Private\Staff.cs" />
     <Compile Include="Modules\Commands\Public\Public.cs" />
+    <Compile Include="Modules\Events\DailyQOTD.cs" />
+    <Compile Include="Modules\Events\SuggestionReactions.cs" />
+    <Compile Include="Modules\Events\UserJoinLeave.cs" />
     <Compile Include="Objects\IWarning.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -133,8 +137,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Modules\Events\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

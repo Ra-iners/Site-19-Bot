@@ -66,6 +66,7 @@ namespace Site___
                 
                 new SuggestionReactions().Initialize();
                 new DailyQOTD().Initialize();
+                new UserJoinLeave().Initialize();
             }
         }
 
