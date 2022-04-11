@@ -337,7 +337,7 @@ namespace Site___.Modules.Commands.Private
         }
         [Command("Purge", RunMode = RunMode.Async)]
         [Alias("Clear")]
-        public async Task Purge(int Count=0)
+        public async Task Purge(int Count=0, PurgeFlags Flags= PurgeFlags.All)
         {
             if (Count is 0)
             {
@@ -358,8 +358,23 @@ namespace Site___.Modules.Commands.Private
                 return;
             }
             Globals.Log = "**Purge** | " + Context.User.Username + "#" + Context.User.Discriminator + " (" + Context.User.Id + ") purged ``" + Count + "`` messages in ``" + Context.Channel.Name + "``.";
-            await Context.Message.DeleteAsync();
-            await (Context.Channel as ITextChannel).DeleteMessagesAsync(await Context.Channel.GetMessagesAsync(Count).FlattenAsync());
+            var Messages = await Context.Channel.GetMessagesAsync(Count).FlattenAsync();
+            
+            List<IMessage> ToBeDeleted = new();
+            foreach(var Message in Messages)
+            {
+                if (Flags == PurgeFlags.All)
+                    ToBeDeleted.Add(Message);
+                else if (Flags == PurgeFlags.Bots && Message.Author.IsBot)
+                    ToBeDeleted.Add(Message);
+                else if (Flags == PurgeFlags.Webhooks && Message.Author.IsWebhook)
+                    ToBeDeleted.Add(Message);
+                else if (Flags == PurgeFlags.Users && !Message.Author.IsBot && !Message.Author.IsWebhook)
+                    ToBeDeleted.Add(Message);
+            }
+
+            await (Context.Channel as SocketTextChannel).DeleteMessagesAsync(ToBeDeleted);
+
             await Context.Channel.SendMessageAsync($"Succesfully purged {Count} messages.");
         }
         [Command("Warn", RunMode = RunMode.Async)]
