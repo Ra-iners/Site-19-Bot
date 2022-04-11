@@ -28,6 +28,7 @@ namespace Site___.Logging
             NameValueCollection NVal = new NameValueCollection();
             NVal["content"] = message;
             Http.UploadValues(_webhook, NVal);
+            Http.Dispose();
         }
     }
 }
